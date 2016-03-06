@@ -35,16 +35,15 @@ class Igra():
                         poteze.append((i,j,i,j+1))
         return poteze
 
-    def povleci_potezi(self, i, j):
-        """Povleci_potezi(i,j) vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
-        if self.plosca[i][j] is not None:
-            # neveljavna poteza
-            return None
-        else:
-            if self.plosca[i+1][j] is None:
+    def povleci_potezi(self, i1, j1, i2, j2):
+        """Povleci_potezi(i1, j1, i2, j2) vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
+        self.veljavne_poteze()
+        for i in range(len(poteze)):
+            if poteze[i] is (i1, j1, i2, j2) or (i2, j2, i1, j1):
+                # Primerja povlečene poteze z veljavnimi
                 p = self.na_potezi
-                self.plosca[i][j] = self.na_potezi
-                self.plosca[i+1][j] = self.na_potezi
+                self.plosca[i1][j1] = self.na_potezi
+                self.plosca[i2][j2] = self.na_potezi
                 stanje = self.stanje_igre()
                 if stanje == NI_KONEC:
                     # Igre ni konec, zdaj je na potezi nasprotnik
@@ -53,18 +52,9 @@ class Igra():
                     # Igre je konec
                     self.na_potezi = None
                 return stanje
-            elif self.plosca[i][j+1] is None:
-                p = self.na_potezi
-                self.plosca[i][j] = self.na_potezi
-                self.plosca[i][j+1] = self.na_potezi
-                stanje = self.stanje_igre()
-                 if stanje == NI_KONEC:
-                    # Igre ni konec, zdaj je na potezi nasprotnik
-                    self.na_potezi = nasprotnik(self.na_potezi)
-                else:
-                    # Igre je konec
-                    self.na_potezi = None
-                return stanje
+            else:
+                # neveljavna poteza
+            return None
 
     def stanje_igre(self):
         """Ugotovi, kakšno je trenutno stanje igre. Vrne:
@@ -85,7 +75,6 @@ class Igra():
                     else:
                         # Igre je konec
                         return p
-                        
 
 
 ######################################################################
