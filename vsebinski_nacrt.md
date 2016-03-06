@@ -40,10 +40,10 @@ Razred, v katerem je definiran uporabniški vmesnik. Metode:
 
 #### Razred "igra"
 Objekt tega razreda vsebuje trenutno stanje igre. Ima naslednje metode:
-* "povleci_potezi(self,i,j)": odigraj potezo na polju "(i,j)", pri čemer je "i" vrstica in "j" stolpec
-* "stanje_igre(self,i,j)": ugotovi, kakšno je trenutno stanje igre: ni konec, zmagal je "red", zmagal je "blue"
-* "na_potezi": kdo je na potezi: "igralec_red", "igralec_blue" ali "None"
 * "veljavne_poteze(self)": vrne seznam parov polj, kamor je možno položiti domino
+* "povleci_potezi(self,i1,j1,i2,j2)": odigraj potezi na polju "(i1,j1)" in "(i2,j2)", pri čemer je "i" vrstica in "j" stolpec
+* "stanje_igre(self)": ugotovi, kakšno je trenutno stanje igre: ni konec, zmagal je "red", zmagal je "blue"
+* "na_potezi": kdo je na potezi: "igralec_red", "igralec_blue" ali "None"
 
 #### Igralci
 Razne vrste igralcev (človek, algoritem minimax, algoritem alfa-beta) predstavimo vsakega s svojim razredom. Objekt, ki predstavlja igralca, mora imeti naslednje metode:
