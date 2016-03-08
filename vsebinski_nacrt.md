@@ -35,13 +35,17 @@ Vsi razredi so v datoteki "cram.py".
 
 #### Razred "GUI"
 Razred, v katerem je definiran uporabniški vmesnik. Metode:
+
 * "zacni_igro(self, Igralec_red, Igralec_blue)": začni igrati igro z danimi igralci
 * "koncaj_igro(self, zmagovalec)": končaj igro z danim zmagovalecem
 
 #### Razred "igra"
-Objekt tega razreda vsebuje trenutno stanje igre. Ima naslednje metode:
+Objekt tega razreda vsebuje logiko igre. Ima naslednje metode:
+
+* "kopija_igre(self)": naredi kopijo igre
+* "zgodovina_igre(self)": shrani trenutno pozicijo in kdo jo je naredil
 * "veljavne_poteze(self)": vrne seznam parov polj, kamor je možno položiti domino
-* "povleci_potezi(self,i1,j1,i2,j2)": odigraj potezi na polju "(i1,j1)" in "(i2,j2)", pri čemer je "i" vrstica in "j" stolpec
+* "naredi_potezo(self,i1,j1,i2,j2)": odigra potezi na polju "(i1,j1)" in "(i2,j2)", pri čemer je "i" vrstica in "j" stolpec
 * "stanje_igre(self)": ugotovi, kakšno je trenutno stanje igre: ni konec, zmagal je "red", zmagal je "blue"
 * "na_potezi": kdo je na potezi: "igralec_red", "igralec_blue" ali "None"
 
@@ -50,11 +54,21 @@ Razne vrste igralcev (človek, algoritem minimax, algoritem alfa-beta) predstavi
 
 * "__ init __(self, gui)": konstruktorju podamo objekt `gui`, s katerim lahko dostopa do uporabniškega vmesnika in stanja igre
 * "igraj(self)": GUI pokliče to metodo, ko je igralec na potezi
+* "prekini(self)":  GUI pokliče to metodo, da prekine razmišljanje
 * "klik(self, i, j)": GUI pokliče to metodo, če je igralec na potezi in je uporabnik kliknil polje "(i,j)" na plošči
 * "spust"(self, i, j)": GUI pokliče to metodo, če je igralec že kliknil na polje in končal klik na polju "(i,j)" na plošči
 
 ##### Razred "clovek"
 Igralec je človek, potezo dobi s klikom na miško.
 
-##### Razred "minimax"
-Igralec računalnik, ki igra z metodo minimax.
+##### Razred "računalnik"
+Igralec računalnik, ki igra z metodo minimax ali alfa-beta.
+
+##### Razred "algoritem minimax"
+Razred, ki vsebuje algoritem minimax. Metde so naslednje:
+
+* "__ init __(self, globina)": konstruktorju podamo objekt `globina`.
+* "izracunaj_potezo(self, igra)": računalnik pokliče to metodo, da najde najboljšo potezo
+* "vrednost_igre(self)": vrne vrednost igre po odigrani potezi, ki jo uporabi minimax
+* "minimax(self, globina, maksimiziramo)": ovrednoti možne poteze ter vrne najboljšo potezo
+
