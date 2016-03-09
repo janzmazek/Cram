@@ -1,19 +1,15 @@
 import tkinter
 import threading
 import time
-import argparse
-
-# Privzeta minimax globina, če je nismo podali ob zagonu v ukazni vrstici
-MINIMAX_PRIVZETA_GLOBINA = 3 
+import argparse 
 
 ######################################################################
 ## Igra
 
-IGRALEC_RED = "rdeči"
+IGRALEC_RED = "rdeci"
 IGRALEC_BLUE = "modri"
 NEPOKRITO = "belo"
 NI_KONEC = "ni konec"
-VELIKOST_PLOSCE = 4
 
 def nasprotnik(igralec):
     if igralec == IGRALEC_RED:
@@ -24,33 +20,34 @@ def nasprotnik(igralec):
         assert False, "nasprotnik: prepovedan nasprotnik"
 
 class Igra():
-    def __init__(self):
+    def __init__(self, velikost):
+        self.velikost = velikost
         self.plosca = []
-        for i in range(VELIKOST_PLOSCE):
-            self.plosca.append([NEPOKRITO for j in range(VELIKOST_PLOSCE)])
+        for i in range(self.velikost):
+            self.plosca.append([NEPOKRITO for j in range(self.velikost)])
         self.na_potezi = IGRALEC_RED
         self.zgodovina = []
 
     def kopija_igre(self):
         """Vrne kopijo te igre."""
-        k = Igra()
-        k.plosca = [self.plosca[i][:] for i in range(VELIKOST_PLOSCE)]
+        k = Igra(velikost)
+        k.plosca = [self.plosca[i][:] for i in range(self.velikost)]
         k.na_potezi = self.na_potezi
         k.zgodovina = self.zgodovina
         return k
 
     def zgodovina_igre(self):
         """Shrani trenutno stanje igre."""
-        z_plosca = [self.plosca[i][:] for i in range(VELIKOST_PLOSCE)]
+        z_plosca = [self.plosca[i][:] for i in range(self.velikost)]
         z_na_potezi = self.na_potezi
         self.zgodovina.append((z_plosca, z_na_potezi))
         return z_na_potezi
  
     def veljavne_poteze(self):
-        """Vrni seznam veljavnih potez."""
+        """Vrne seznam veljavnih potez."""
         veljavne = []
-        for i in range(VELIKOST_PLOSCE):
-            for j in range(VELIKOST_PLOSCE):
+        for i in range(self.velikost):
+            for j in range(self.velikost):
                 if self.plosca[i][j] == NEPOKRITO:
                     if self.plosca[i+1][j] == NEPOKRITO:
                         veljavne.append((i,j,i+1,j))
@@ -59,12 +56,12 @@ class Igra():
         return veljavne
 
     def naredi_potezo(self, pozicija1, pozicija2):
-        """naredi_potezo(i1, j1, i2, j2) vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
+        """Vrne stanje igre po potezi ali None, ce je poteza neveljavna."""
         (i1,j1) = pozicija1
         (i2,j2) = pozicija2
         self.veljavne_poteze()
         for i in veljavne_poteze():
-            if (i == (i1, j1, i2, j2)) or (i == (i2, j2, i1, j1)): # Primerja povlečene poteze z veljavnimi.
+            if (i == (i1, j1, i2, j2)) or (i == (i2, j2, i1, j1)): # Primerja povlecene poteze z veljavnimi.
                 self.plosca[i1][j1] = self.na_potezi
                 self.plosca[i2][j2] = self.na_potezi
                 self.zgodovina_igre()
@@ -80,13 +77,14 @@ class Igra():
                 assert False, "igra: prepovedana poteza"
 
     def stanje_igre(self):
-        """Ugotovi, kakšno je trenutno stanje igre. Vrne:
-           - IGRALEC_RED, če je igre konec in je zmagal IGRALEC_RED
-           - IGRALEC_BLUE, če je igre konec in je zmagal IGRALEC_BLUE
-           - NI_KONEC, če igre še ni konec """
+        """Ugotovi, kaksno je trenutno stanje igre. Vrne:
+           - IGRALEC_RED, ce je igre konec in je zmagal IGRALEC_RED
+           - IGRALEC_BLUE, ce je igre konec in je zmagal IGRALEC_BLUE
+           - NI_KONEC, ce igre se ni konec
+        """
         zmagovalec = self.na_potezi
-        for i in range(VELIKOST_PLOSCE):
-            for j in range(VELIKOST_PLOSCE):
+        for i in range(self.velikost):
+            for j in range(self.velikost):
                 if self.plosca[i][j] == NEPOKRITO:
                     if self.plosca[i+1][j] == NEPOKRITO:
                         return NI_KONEC # Igre ni konec.
@@ -97,28 +95,30 @@ class Igra():
 
     
 ######################################################################
-## Igralec računalnik
+## Igralec racunalnik
 
 class Racunalnik():
     def __init__(self, gui, algoritem):
         self.gui = gui
         self.algoritem = algoritem
-        self.vlakno = None # Vlakno, ki razmišlja.
+        self.vlakno = None # Vlakno, ki razmislja.
 
     def igraj(self):
         """Igraj potezo, ki jo vrne algoritem."""
-        # Naredimo vlakno, ki mu podamo *kopijo* igre (da ne bo zmedel GUIja).
-        self.vlakno = threading.Thread(target=lambda: self.algoritem.izracunaj_potezo(self.gui.igra.kopija()))
+        # Naredimo vlakno, ki mu podamo kopijo igre.
+        self.vlakno = threading.Thread(target=lambda: self.algoritem.izracunaj_potezo(self.gui.igra.kopija_igre()))
         self.vlakno.start()
         while self.algoritem.poteza is None:
-            time.sleep(0.1)
-            if self.algoritem.poteza is not None:
+            time.sleep(0.1) # Pocaka 100ms.
+            if self.algoritem.poteza: # Algoritem je nasel potezo.
                 self.gui.povleci_potezo(self.algoritem.poteza)
                 self.vlakno = None
+            elif self.algoritem.zapri: # Razmislanje je prekinjeno.
+                break
 
     def prekini(self):
-        """Prekinemo razmišljanje algortitma."""
-        if self.vlakno is not None:
+        """Prekinemo razmisljanje algortitma."""
+        if self.vlakno:
             self.algoritem.prekini()
             self.vlakno.join()
             self.vlakno = None
@@ -144,27 +144,27 @@ class Minimax():
         self.igra = None
         self.kdo_sem = None  # Katerega igralca igramo.
         self.poteza = None
-        self.koncaj = False
+        self.zapri = False
 
     def prekini(self):
         """Metoda, ki jo pokliče GUI, ker je uporabnik zaprl okno ali izbral novo igro."""
-        self.koncaj = True
+        self.zapri = True
 
     def izracunaj_potezo(self, igra):
         """Izračunaj potezo za trenutno stanje dane igre."""
-        self.koncaj = False
+        self.zapri = False
         self.igra = igra # Dobimo kopijo igre.
         self.kdo_sem = self.igra.na_potezi
         self.poteza = None
-        (poteza, vrednost) = self.minimax(self.globina, True) # Poženemo minimax.
-        if self.koncaj is False:
+        (poteza, vrednost) = self.minimax(self.globina, True) # Pozenemo minimax.
+        if self.zapri is False:
             self.poteza = poteza
 
     def vrednost_igre(self):
         """vrednost_igre() sešteje vrednosti vseh vrstic/stolpcev na plošči."""
         # Slovar, ki pove, koliko so vredne posamezne vrstice/stolpci, kjer je "p : v":
-        # x je število nezasedenih polj v vrstici/stolpcu in y vrednost vrstice/stolpca.
-        if VELIKOST_PLOSCE == 4:
+        # x je stevilo nezasedenih polj v vrstici/stolpcu in y vrednost vrstice/stolpca.
+        if self.igra.velikost == 4: # Ce je igralno polje velikosti 4x4.
             vrednosti_vrstic_stolpcev = {
                 0 : Minimax.UTEZ,
                 2 : Minimax.UTEZ//10,
@@ -172,7 +172,7 @@ class Minimax():
                 3 : -Minimax.UTEZ//10,
                 1 : -Minimax.UTEZ
             }
-        elif VELIKOST_PLOSCE == 6:
+        elif self.igra.velikost == 6: # Ce je igralno polje velikosti 6x6.
             vrednosti_vrstic_stolpcev = {
                 0 : Minimax.UTEZ,
                 2 : Minimax.UTEZ//10,
@@ -182,7 +182,7 @@ class Minimax():
                 3 : -Minimax.UTEZ//10,
                 1 : -Minimax.UTEZ
             }
-        elif VELIKOST_PLOSCE == 8:  
+        elif self.igra.velikost == 8: # Ce je igralno polje velikosti 8x8.
             vrednosti_vrstic_stolpcev = {
                 0 : Minimax.UTEZ,
                 2 : Minimax.UTEZ//10,
@@ -195,8 +195,8 @@ class Minimax():
                 1 : -Minimax.UTEZ
             }   
         vrednost = 0
-        for i in range(VELIKOST_PLOSCE):
-            for j in range(VELIKOST_PLOSCE):
+        for i in range(self.igra.velikost):
+            for j in range(self.igra.velikost):
                 if self.igra.plosca[i][j] == NEPOKRITO:
                     p1 += 1
                 elif self.igra.plosca[j][i] == NEPOKRITO:
@@ -205,19 +205,20 @@ class Minimax():
         return vrednost
 
     def minimax(self, globina, maksimiziramo):
-        if self.koncaj is True:
+        """Glavna metoda minimax."""
+        if self.zapri:
             return (None, 0) # Igro prekinemo.
         rezultat = self.igra.stanje_igre()
-        if (rezultat == IGRALEC_RED) or (rezultat == IGRALEC_BLUE): # Igre je konec, vrnemo njeno vrednost.
+        if (rezultat == IGRALEC_RED) or (rezultat == IGRALEC_BLUE): # Igre je konec.
             if zmagovalec == self.kdo_sem:
                 return (None, Minimax.ZMAGA)
             elif zmagovalec == nasprotnik(self.kdo_sem):
                 return (None, -Minimax.ZMAGA)
         elif rezultat == NI_KONEC: # Igre ni konec.
-            if globina == 0:
-                return (None, self.vrednost_igre())  
+            if globina == 0: # Zmanjkalo globine.
+                return (None, self.vrednost_igre())
             else:
-                if maksimiziramo: # Maksimiziramo
+                if maksimiziramo:  # Maksimiziramo
                     naj_poteza = None
                     naj_vrednost = -Minimax.NESKONCNO
                     for p in self.igra.veljavne_poteze():
