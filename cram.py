@@ -248,3 +248,70 @@ class Minimax():
             assert False, "minimax: prepovedano stanje igre"
 
 ######################################################################
+#GUI
+class Gui():
+    #stranica kvadratka
+    enota=100
+
+    def __init__(self, master, nacin=1, velikost=6, tezavnost=2):
+
+        # Če uporabnik zapre okno naj se poklice self.zapri_okno
+        master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
+        
+        # Glavni menu
+        menu = tkinter.Menu(master)
+        master.config(menu=menu) # Dodamo glavni menu v okno
+
+        # Podmenu za izbiro načina igre
+        menu_igra = tkinter.Menu(menu)
+        menu.add_cascade(label="Igra", menu=menu_igra)
+        menu_igra.add_command(label="Človek vs. računalniku")
+        menu_igra.add_command(label="Človek vs. človeku")
+
+        # Podmenu za izbiro velikosti
+        menu_velikost = tkinter.Menu(menu)
+        menu.add_cascade(label="Velikost", menu=menu_velikost)
+        menu_velikost.add_command(label="4x4")
+        menu_velikost.add_command(label="6x6")
+        menu_velikost.add_command(label="8x8")
+
+        # Podmenu za izbiro težavnosti
+        menu_tezavnost = tkinter.Menu(menu)
+        menu.add_cascade(label="Težavnost", menu=menu_tezavnost)
+        menu_tezavnost.add_command(label="Težko")
+        menu_tezavnost.add_command(label="Srednje")
+        menu_tezavnost.add_command(label="Lahko")
+
+        # Igralno območje
+        self.ustvari_okno(master, velikost)
+
+        # Črte na igralnem polju
+        self.narisi_crte(velikost)
+
+
+    def zapri_okno(self, master):
+        """Ta metoda se pokliče, ko uporabnik zapre aplikacijo."""
+        # Vlaknom, ki tečejo vzporedno, je treba sporočiti, da morajo
+        # končati, sicer se bo okno zaprlo, aplikacija pa bo še vedno
+        # delovala.
+        #self.prekini_igralce()
+        # Dejansko zapremo okno.
+        master.destroy()
+
+    def ustvari_okno(self, master, velikost):
+        self.plosca=tkinter.Canvas(master, width=velikost*Gui.enota, height=velikost*Gui.enota)
+        self.plosca.grid(row=1, column=1)
+
+    def narisi_crte(self,velikost):
+        """Nariši črte v igralnem polju"""
+        d = Gui.enota
+        for i in range(1, velikost):
+            self.plosca.create_line(i*d, 0*d, i*d, velikost*d)
+            self.plosca.create_line(0*d, i*d, velikost*d, i*d)
+
+######################################################################
+#GLAVNI PROGRAM
+root = tkinter.Tk()
+root.title("Cram")
+aplikacija = Gui(root)
+root.mainloop()
