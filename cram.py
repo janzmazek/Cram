@@ -251,9 +251,14 @@ class Minimax():
 #GUI
 class Gui():
     #stranica kvadratka
-    enota=100
+    enota=75
+    
+    #spremenljivke
+    nacin=1
+    velikost=4
+    tezavnost=2
 
-    def __init__(self, master, nacin=1, velikost=6, tezavnost=2):
+    def __init__(self, master):
 
         # Če uporabnik zapre okno naj se poklice self.zapri_okno
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
@@ -265,29 +270,40 @@ class Gui():
         # Podmenu za izbiro načina igre
         menu_igra = tkinter.Menu(menu)
         menu.add_cascade(label="Igra", menu=menu_igra)
-        menu_igra.add_command(label="Človek vs. računalniku")
-        menu_igra.add_command(label="Človek vs. človeku")
+        menu_igra.add_command(label="Človek vs. računalniku", command=lambda: self.spremeni_nacin(master, 1))
+        menu_igra.add_command(label="Človek vs. človeku", command=lambda: self.spremeni_nacin(master, 2))
 
         # Podmenu za izbiro velikosti
         menu_velikost = tkinter.Menu(menu)
         menu.add_cascade(label="Velikost", menu=menu_velikost)
-        menu_velikost.add_command(label="4x4")
-        menu_velikost.add_command(label="6x6")
-        menu_velikost.add_command(label="8x8")
+        menu_velikost.add_command(label="4x4", command=lambda: self.spremeni_velikost(master, 4))
+        menu_velikost.add_command(label="6x6", command=lambda: self.spremeni_velikost(master, 6))
+        menu_velikost.add_command(label="8x8", command=lambda: self.spremeni_velikost(master, 8))
 
         # Podmenu za izbiro težavnosti
         menu_tezavnost = tkinter.Menu(menu)
         menu.add_cascade(label="Težavnost", menu=menu_tezavnost)
-        menu_tezavnost.add_command(label="Težko")
-        menu_tezavnost.add_command(label="Srednje")
-        menu_tezavnost.add_command(label="Lahko")
+        menu_tezavnost.add_command(label="Težko", command=lambda: self.spremeni_tezavnost(master, 3))
+        menu_tezavnost.add_command(label="Srednje", command=lambda: self.spremeni_tezavnost(master, 2))
+        menu_tezavnost.add_command(label="Lahko", command=lambda: self.spremeni_tezavnost(master, 1))
 
         # Igralno območje
-        self.ustvari_okno(master, velikost)
+        self.ustvari_okno(master, Gui.velikost)
 
         # Črte na igralnem polju
-        self.narisi_crte(velikost)
+        self.narisi_crte(Gui.velikost)
 
+    def spremeni_nacin(self, master, nacin):
+        Gui.nacin=nacin
+
+    def spremeni_velikost(self, master, velikost):
+        self.plosca.destroy()
+        Gui.ustvari_okno(self, master, velikost)
+        Gui.narisi_crte(self, velikost)
+        Gui.velikost=velikost
+
+    def spremeni_tezavnost(self, master, tezavnost):
+        Gui.tezavnost=tezavnost
 
     def zapri_okno(self, master):
         """Ta metoda se pokliče, ko uporabnik zapre aplikacijo."""
@@ -299,15 +315,18 @@ class Gui():
         master.destroy()
 
     def ustvari_okno(self, master, velikost):
-        self.plosca=tkinter.Canvas(master, width=velikost*Gui.enota, height=velikost*Gui.enota)
+        self.plosca=tkinter.Canvas(master, width=velikost*Gui.enota, height=velikost*Gui.enota, bg="AntiqueWhite1")
         self.plosca.grid(row=1, column=1)
+        # Onemogoči resize
+        master.resizable(0,0)
 
     def narisi_crte(self,velikost):
         """Nariši črte v igralnem polju"""
         d = Gui.enota
         for i in range(1, velikost):
-            self.plosca.create_line(i*d, 0*d, i*d, velikost*d)
-            self.plosca.create_line(0*d, i*d, velikost*d, i*d)
+            self.plosca.create_line(i*d, 0*d, i*d, velikost*d, fill="light slate grey", width=3)
+            self.plosca.create_line(0*d, i*d, velikost*d, i*d, fill="light slate grey", width=3)
+
 
 ######################################################################
 #GLAVNI PROGRAM
