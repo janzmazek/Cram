@@ -246,9 +246,33 @@ class Minimax():
                 return (naj_poteza, naj_vrednost)
         else:
             assert False, "minimax: prepovedano stanje igre"
+        
+######################################################################
+## Igralec človek
+
+class Clovek():
+    def __init__(self, gui):
+        self.gui = gui
+
+    def igraj(self):
+        # Smo na potezi. Zaenkrat ne naredimo nič, ampak
+        # čakamo, da bo uporanik kliknil na ploščo.
+        pass
+
+    def prekini(self):
+        # Človek igorira prekinitev razmišljanja.
+        pass
+
+    def klik(self, pozicija1):
+        self.gui.naredi_potezo(pozicija1)
+    
+    def spust(self, pozicija2):
+        self.gui.naredi_potezo(pozicija2)
+
 
 ######################################################################
 #GUI
+        
 class Gui():
     #stranica kvadratka
     enota=75
@@ -259,7 +283,10 @@ class Gui():
     tezavnost=2
 
     def __init__(self, master):
-
+        self.igra = None 
+        self.rdeci = None # Rdeči igralec
+        self.modri = None # Modri igralec
+        
         # Če uporabnik zapre okno naj se poklice self.zapri_okno
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
         
@@ -355,6 +382,28 @@ class Gui():
         
     def pobarvaj_modro(self, x, y):
         self.plosca.create_rectangle(x*Gui.enota, y*Gui.enota, (x+1)*Gui.enota, (y+1)*Gui.enota, fill="blue")
+
+    def naredi_potezo(self, pozicija1, pozicija2):
+        """Naredi potezo 1 (klik) in 2 (spust). Ce je neveljavna, ne naredi nic."""
+        # Logika igre je v self.igra.
+        kdo_sem = self.igra.na_potezi
+        stanje = self.igra.naredi_potezo(pozicija1, pozicija2)
+        if stanje: # Narisemo potezo.
+            if kdo_sem == IGRALEC_RED:
+                self.pobarvaj_rdece(pozicija1, pozicija2) # Pobarva rdece.
+            elif kdo_sem == IGRALEC_BLUE:
+                self.pobarvaj_modro(pozicija1, pozicija2) # Pobarva modro.
+            if stanje == NI_KONEC: # Igra se nadaljuje.
+                if self.igra.na_potezi == IGRALEC_RED:
+                    self.napis.set("Na potezi je rdeči igralec.")
+                    self.rdeci.igraj()
+                elif self.igra.na_potezi == IGRALEC_BLUE:
+                    self.napis.set("Na potezi je modri igralec.")
+                    self.modri.igraj()
+            else: # Igre je konec.
+                self.koncaj_igro(stanje)
+        else: # Neveljavna poteza.
+            pass
         
 ######################################################################
 #GLAVNI PROGRAM
