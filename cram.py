@@ -287,20 +287,29 @@ class Gui():
         menu_tezavnost.add_command(label="Srednje", command=lambda: self.spremeni_tezavnost(master, 2))
         menu_tezavnost.add_command(label="Lahko", command=lambda: self.spremeni_tezavnost(master, 1))
 
+        self.pripravi_igro(master)
+
+    def pripravi_igro(self, master):
         # Igralno območje
         self.ustvari_okno(master, Gui.velikost)
 
         # Črte na igralnem polju
         self.narisi_crte(Gui.velikost)
 
+        # Naročimo se na dogodek Button-1 na self.plosca,
+        self.plosca.bind("<Button-1>", self.plosca_klik)
+
+        # Naročimo se na dogodek ButtonRelease-1 na self.plosca,
+        self.plosca.bind("<ButtonRelease-1>", self.plosca_spust)
+        
+
     def spremeni_nacin(self, master, nacin):
         Gui.nacin=nacin
 
     def spremeni_velikost(self, master, velikost):
         self.plosca.destroy()
-        Gui.ustvari_okno(self, master, velikost)
-        Gui.narisi_crte(self, velikost)
         Gui.velikost=velikost
+        Gui.pripravi_igro(self, master)
 
     def spremeni_tezavnost(self, master, tezavnost):
         Gui.tezavnost=tezavnost
@@ -327,7 +336,26 @@ class Gui():
             self.plosca.create_line(i*d, 0*d, i*d, velikost*d, fill="light slate grey", width=3)
             self.plosca.create_line(0*d, i*d, velikost*d, i*d, fill="light slate grey", width=3)
 
+    def plosca_klik(self, event):
+        """Obdelaj klik na ploščo."""
+        # Tistemu, ki je na potezi, povemo, da je uporabnik kliknil na ploščo.
+        # Podamo mu potezo p.
+        i = event.x // Gui.enota
+        j = event.y // Gui.enota
+        print("Kliknil si na ({0},{1})".format(i,j))
 
+    def plosca_spust(self,event):
+        """Obdelaj spust."""
+        i=event.x//Gui.enota
+        j=event.y//Gui.enota
+        print("Spustil si na ({0},{1})".format(i,j))
+
+    def pobarvaj_rdece(self, x, y):
+        self.plosca.create_rectangle(x*Gui.enota, y*Gui.enota, (x+1)*Gui.enota, (y+1)*Gui.enota, fill="red")
+        
+    def pobarvaj_modro(self, x, y):
+        self.plosca.create_rectangle(x*Gui.enota, y*Gui.enota, (x+1)*Gui.enota, (y+1)*Gui.enota, fill="blue")
+        
 ######################################################################
 #GLAVNI PROGRAM
 root = tkinter.Tk()
