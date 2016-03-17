@@ -56,7 +56,7 @@ class Igra():
         return veljavne
 
     def naredi_potezo(self, pozicija1, pozicija2):
-        """Vrne stanje igre po potezi ali None, ce je poteza neveljavna."""
+        """Vrne kdo je naredil potezo in stanje igre po potezi oz. None, ce je poteza neveljavna."""
         (i1,j1) = pozicija1
         (i2,j2) = pozicija2
         self.veljavne_poteze()
@@ -65,12 +65,13 @@ class Igra():
                 self.plosca[i1][j1] = self.na_potezi
                 self.plosca[i2][j2] = self.na_potezi
                 self.zgodovina_igre()
+                igralec = self.na_potezi
                 stanje = self.stanje_igre()
                 if stanje == NI_KONEC:
                     self.na_potezi = nasprotnik(self.na_potezi) # Igre ni konec.
                 else:
                     self.na_potezi = None # Igre je konec.
-                return stanje
+                return (igralec, stanje)
             elif (self.plosca[i1][j1] != NEPOKRITO) or (self.plosca[i2][j2] != NEPOKRITO) or (self.na_potezi == None): # Neveljevne poteze.
                 return None
             else:
@@ -82,7 +83,6 @@ class Igra():
            - IGRALEC_BLUE, ce je igre konec in je zmagal IGRALEC_BLUE
            - NI_KONEC, ce igre se ni konec
         """
-        zmagovalec = self.na_potezi
         for i in range(self.velikost):
             for j in range(self.velikost):
                 if self.plosca[i][j] == NEPOKRITO:
@@ -91,7 +91,7 @@ class Igra():
                     elif self.plosca[i][j+1] == NEPOKRITO:
                         return NI_KONEC # Igre ni konec.
                     else:
-                        return zmagovalec # Igre je konec.
+                        return self.na_potezi # Igre je konec.
 
     
 ######################################################################
@@ -111,7 +111,7 @@ class Racunalnik():
         while self.algoritem.poteza is None:
             time.sleep(0.1) # Pocaka 100ms.
             if self.algoritem.poteza: # Algoritem je nasel potezo.
-                self.gui.povleci_potezo(self.algoritem.poteza)
+                self.gui.naredi_potezo(self.algoritem.poteza)
                 self.vlakno = None
             elif self.algoritem.zapri: # Razmislanje je prekinjeno.
                 break
@@ -205,7 +205,7 @@ class Minimax():
         return vrednost
 
     def minimax(self, globina, maksimiziramo):
-        """Glavna metoda minimax."""
+        """Glavna metoda minimax. Vrne potezo in njeno vrednost."""
         if self.zapri:
             return (None, 0) # Igro prekinemo.
         rezultat = self.igra.stanje_igre()
@@ -223,7 +223,7 @@ class Minimax():
                     naj_vrednost = -Minimax.NESKONCNO
                     for p in self.igra.veljavne_poteze():
                         (pozicija1, pozicija2) = p
-                        self.igra.naredi_potezo(pozicija1,pozicija2)
+                        self.igra.naredi_potezo(pozicija1, pozicija2)
                         vrednost = self.minimax(globina-1, not maksimiziramo)[2]
                         (self.igra.plosca, self.igra.na_potezi) = self.igra.zgodovina.pop()
                         if vrednost > naj_vrednost:
@@ -235,7 +235,7 @@ class Minimax():
                     naj_vrednost = Minimax.NESKONCNO
                     for p in self.igra.veljavne_poteze():
                         (pozicija1, pozicija2) = p
-                        self.igra.naredi_potezo(pozicija1,pozicija2)
+                        self.igra.naredi_potezo(pozicija1, pozicija2)
                         vrednost = self.minimax(globina-1, not maksimiziramo)[2]
                         (self.igra.plosca, self.igra.na_potezi) = self.igra.zgodovina.pop()
                         if vrednost < naj_vrednost:
@@ -253,21 +253,24 @@ class Minimax():
 class Clovek():
     def __init__(self, gui):
         self.gui = gui
+        self.poteza = None
 
     def igraj(self):
-        # Smo na potezi. Zaenkrat ne naredimo nič, ampak
-        # čakamo, da bo uporanik kliknil na ploščo.
+        # Smo na potezi. Zaenkrat ne naredimo nic, ampak
+        # cakamo, da bo uporanik kliknil na ploščo.
         pass
 
     def prekini(self):
-        # Človek igorira prekinitev razmišljanja.
+        # Clovek igorira prekinitev razmisljanja.
         pass
 
     def klik(self, pozicija1):
-        self.gui.naredi_potezo(pozicija1)
-    
+        self.poteza = pozicija1 # Zapise pozicijo1.
+        
     def spust(self, pozicija2):
-        self.gui.naredi_potezo(pozicija2)
+        if self.poteza:
+            self.gui.naredi_potezo(self.poteza, pozicija2)
+            self.poteza = None
 
 
 ######################################################################
@@ -342,12 +345,9 @@ class Gui():
         Gui.tezavnost=tezavnost
 
     def zapri_okno(self, master):
-        """Ta metoda se pokliče, ko uporabnik zapre aplikacijo."""
-        # Vlaknom, ki tečejo vzporedno, je treba sporočiti, da morajo
-        # končati, sicer se bo okno zaprlo, aplikacija pa bo še vedno
-        # delovala.
-        #self.prekini_igralce()
-        # Dejansko zapremo okno.
+        """Sporoci igralcem, da nehajo razmisljati in zapre okno."""
+        self.modri.prekini()
+        self.rdeci.prekini()
         master.destroy()
 
     def ustvari_okno(self, master, velikost):
@@ -364,17 +364,27 @@ class Gui():
             self.plosca.create_line(0*d, i*d, velikost*d, i*d, fill="light slate grey", width=3)
 
     def plosca_klik(self, event):
-        """Obdelaj klik na ploščo."""
-        # Tistemu, ki je na potezi, povemo, da je uporabnik kliknil na ploščo.
-        # Podamo mu potezo p.
+        """Obdela klike na plosco."""
         i = event.x // Gui.enota
         j = event.y // Gui.enota
+        if self.igra.na_potezi == IGRALEC_RED:
+            self.rdeci.klik((i,j)) # Rdeci dobi pozicijo1. 
+        elif self.igra.na_potezi == IGRALEC_BLUE:
+            self.modri.klik((i,j)) # Modri dobi pozicijo1.
+        else:
+            pass
         print("Kliknil si na ({0},{1})".format(i,j))
 
-    def plosca_spust(self,event):
-        """Obdelaj spust."""
-        i=event.x//Gui.enota
-        j=event.y//Gui.enota
+    def plosca_spust(self, event):
+        """Obdela spuste na plosco."""
+        i = event.x // Gui.enota
+        j = event.y // Gui.enota
+        if self.igra.na_potezi == IGRALEC_RED:
+            self.rdeci.spust((i,j)) # Rdeci dobi pozicijo2. 
+        elif self.igra.na_potezi == IGRALEC_BLUE:
+            self.modri.spust((i,j)) # Modri dobi pozicijo2.
+        else:
+            pass
         print("Spustil si na ({0},{1})".format(i,j))
 
     def pobarvaj_rdece(self, x, y):
@@ -386,13 +396,13 @@ class Gui():
     def naredi_potezo(self, pozicija1, pozicija2):
         """Naredi potezo 1 (klik) in 2 (spust). Ce je neveljavna, ne naredi nic."""
         # Logika igre je v self.igra.
-        kdo_sem = self.igra.na_potezi
-        stanje = self.igra.naredi_potezo(pozicija1, pozicija2)
-        if stanje: # Narisemo potezo.
-            if kdo_sem == IGRALEC_RED:
+        (igralec, stanje) = self.igra.naredi_potezo(pozicija1, pozicija2)
+        if (igralec, stanje): # Narisemo potezo.
+            if igralec == IGRALEC_RED:
                 self.pobarvaj_rdece(pozicija1, pozicija2) # Pobarva rdece.
-            elif kdo_sem == IGRALEC_BLUE:
+            elif igralec == IGRALEC_BLUE:
                 self.pobarvaj_modro(pozicija1, pozicija2) # Pobarva modro.
+            # Preveri stanje igre.
             if stanje == NI_KONEC: # Igra se nadaljuje.
                 if self.igra.na_potezi == IGRALEC_RED:
                     self.napis.set("Na potezi je rdeči igralec.")
