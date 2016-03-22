@@ -285,6 +285,9 @@ class Gui():
     velikost=4
     tezavnost=2
 
+    #TAGi
+    TAG_FIGURA="figura"
+
     def __init__(self, master):
         self.igra = None 
         self.rdeci = None # Rdeči igralec
@@ -331,10 +334,33 @@ class Gui():
 
         # Naročimo se na dogodek ButtonRelease-1 na self.plosca,
         self.plosca.bind("<ButtonRelease-1>", self.plosca_spust)
+
+        # Začnemo igro
+        if Gui.nacin==1:
+            Gui.zacni_igro(Gui, Clovek(Gui), Racunalnik(Gui, Minimax(Gui.tezavnost)))
+        elif Gui.nacin==2:
+            Gui.zacni_igro(Gui, Clovek(Gui), Clovek(Gui))
+        else: pass
         
+        
+    def zacni_igro(self, igralec_red, igralec_blue):
+        #self.prekini_igralce(self)
+        #self.ustvari_okno.plosca.delete(Gui.TAG_FIGURA)
+        self.igra=Igra(self.velikost)
+        self.igralec_red=igralec_red
+        self.igralec_blue=igralec_blue
+        self.igralec_red.igraj()
+        
+    def koncaj_igro(self, zmagovalec):
+        self.napis.set("Zmagal je {0}.".format(zmagovalec))
+
+    def prekini_igralce(self):
+        if self.rdeci: self.rdeci.prekini()
+        if self.modri: self.modri.prekini()
 
     def spremeni_nacin(self, master, nacin):
         Gui.nacin=nacin
+        Gui.pripravi_igro(self, master)
 
     def spremeni_velikost(self, master, velikost):
         self.plosca.destroy()
@@ -343,6 +369,7 @@ class Gui():
 
     def spremeni_tezavnost(self, master, tezavnost):
         Gui.tezavnost=tezavnost
+        Gui.pripravi_igro(self, master)
 
     def zapri_okno(self, master):
         """Sporoci igralcem, da nehajo razmisljati in zapre okno."""
@@ -388,10 +415,10 @@ class Gui():
         print("Spustil si na ({0},{1})".format(i,j))
 
     def pobarvaj_rdece(self, x, y):
-        self.plosca.create_rectangle(x*Gui.enota, y*Gui.enota, (x+1)*Gui.enota, (y+1)*Gui.enota, fill="red")
+        self.plosca.create_rectangle(x*Gui.enota, y*Gui.enota, (x+1)*Gui.enota, (y+1)*Gui.enota, fill="red", tag=Gui.TAG_FIGURA)
         
     def pobarvaj_modro(self, x, y):
-        self.plosca.create_rectangle(x*Gui.enota, y*Gui.enota, (x+1)*Gui.enota, (y+1)*Gui.enota, fill="blue")
+        self.plosca.create_rectangle(x*Gui.enota, y*Gui.enota, (x+1)*Gui.enota, (y+1)*Gui.enota, fill="blue", tag=Gui.TAG_FIGURA)
 
     def naredi_potezo(self, pozicija1, pozicija2):
         """Naredi potezo 1 (klik) in 2 (spust). Ce je neveljavna, ne naredi nic."""
