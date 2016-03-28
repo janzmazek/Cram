@@ -151,6 +151,7 @@ class Minimax():
         self.kdo_sem = self.igra.na_potezi
         self.poteza = None
         poteza = self.minimax(self.globina, True)[0] # Pozenemo minimax.
+        print(poteza)
         if self.prekini is False:
             self.poteza = poteza
 
