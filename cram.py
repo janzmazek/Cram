@@ -148,7 +148,6 @@ class Algoritem():
     def izracunaj_potezo(self, globina):
         """Izračuna najboljšo potezo za trenutno stanje igre po izbrani metodi."""
         self.poteza = None
-<<<<<<< HEAD
         # Določimo metodo.
         if globina == 2: # Metoda je minimax.
             self.poteza = self.minimax(globina, True)[0]
@@ -156,12 +155,6 @@ class Algoritem():
             self.poteza = self.alfabeta(globina, True)[0]
         else:
             assert False, "algoritem: prepovedana metoda"
-=======
-        poteza = self.minimax(self.globina, True)[0] # Pozenemo minimax.
-        print(poteza)
-        if self.prekini is False:
-            self.poteza = poteza
->>>>>>> origin/master
 
     def vrednost_igre(self):
         """Sešteje vrednosti vseh vrstic/stolpcev na plošči in vrne seštevek."""
