@@ -7,16 +7,22 @@ V glavnem oknu dva igralca igrata [Cram](https://en.wikipedia.org/wiki/Cram_(gam
 Aplikacija je v enem od treh stanj:
 
 1. Začetek – uporabnik izbere kašn igro želi igrati
-	*način igranja
-		* človek – človek
-		* človek – računalnik
-	*velikost igralnega polja
-		*5x5
-		*6x6
-		*7x7
-	*tažavnost igre
-		*lahko
-		*težko
+	
+	1.način igranja
+
+	* človek – človek
+	* človek – računalnik
+	
+	2.velikost igralnega polja
+
+	* 5x5
+	* 6x6
+	* 7x7
+	
+	3.težavnost igre
+	
+	* lahko
+	* težko
 	
 2. Igra – med igro so v oknu podatki
 	* trenutna razporeditev domin
