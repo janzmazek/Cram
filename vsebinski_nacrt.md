@@ -2,14 +2,22 @@
 
 ## Opis aplikacije
 
-V glavnem oknu dva igralca igrata [Cram](https://en.wikipedia.org/wiki/Cram_(game)). Nasprotni igralec je lahko človek ali računalnik. Igralec igra tako, da klikne na dva polja, na katera želi postaviti domino.
+V glavnem oknu dva igralca igrata [Cram](https://en.wikipedia.org/wiki/Cram_(game)). Nasprotni igralec je lahko človek ali računalnik. Igralec položi domino tako, da klikne na prazno polje ter spusti na sosednjem praznem polju. Karkoli drugega se šteje kot neveljavna poteza.
 
 Aplikacija je v enem od treh stanj:
 
-1. Začetek – uporabnik izbere eno izmed dveh možnostih igranja
-	* človek – človek
-	* človek – računalnik
-
+1. Začetek – uporabnik izbere kašn igro želi igrati
+	*način igranja
+		* človek – človek
+		* človek – računalnik
+	*velikost igralnega polja
+		*5x5
+		*6x6
+		*7x7
+	*tažavnost igre
+		*lahko
+		*težko
+	
 2. Igra – med igro so v oknu podatki
 	* trenutna razporeditev domin
 	* kdo je trenutno na potezi
@@ -18,9 +26,9 @@ Aplikacija je v enem od treh stanj:
 
 Prehod med stanji:
 
-* Prehod iz začetka v igro: sproži ga uporabnik, ko izbere način igranja
+* Prehod iz začetka v igro: sproži ga uporabnik, ko izbere način, velikost in težavnost igre.
 * Prehod iz igre v konec igre: sproži ga uporabniški vmesnik, ko ugotovi, da je konec igre
-* Prehod iz konca igre v začetek igre: uporabnik uporabnik klikne na gump "igraj še enkrat".
+* Prehod iz konca igre v začetek igre: uporabnik ponovno izbere način, velikost in težavnost igre.
 
 ## Struktura programa
 
@@ -36,39 +44,43 @@ Vsi razredi so v datoteki "cram.py".
 #### Razred "GUI"
 Razred, v katerem je definiran uporabniški vmesnik. Metode:
 
-* "zacni_igro(self, Igralec_red, Igralec_blue)": začni igrati igro z danimi igralci
-* "koncaj_igro(self, zmagovalec)": končaj igro z danim zmagovalecem
+* "pripravi_igro(self, master)": pripravi igro, ki jo zahteva uporabnik.
+* "zacni_igro(self, rdeci, modri)": prične igro z danima igralcema.
+* "prekini_igro(self, rdeci, modri)": prekine igro v primeru, da uporabnik zapusti igro.
+* "koncaj_igro(self, zmagovalec)": konča igro in izpiše zmagovalca.
+* "naredi_potezo(self,i1,j1,i2,j2)": odigra potezi na polju "(i1,j1)" in "(i2,j2)"
 
 #### Razred "igra"
 Objekt tega razreda vsebuje logiko igre. Ima naslednje metode:
 
-* "kopija_igre(self)": naredi kopijo igre
-* "zgodovina_igre(self)": shrani trenutno pozicijo in kdo jo je naredil
-* "veljavne_poteze(self)": vrne seznam parov polj, kamor je možno položiti domino
-* "naredi_potezo(self,i1,j1,i2,j2)": odigra potezi na polju "(i1,j1)" in "(i2,j2)", pri čemer je "i" vrstica in "j" stolpec
-* "stanje_igre(self)": ugotovi, kakšno je trenutno stanje igre: ni konec, zmagal je "red", zmagal je "blue"
-* "na_potezi": kdo je na potezi: "igralec_red", "igralec_blue" ali "None"
+* "kopija_igre(self)": naredi kopijo igre.
+* "zgodovina_igre(self)": shrani trenutno stanje igre, da se lahko algoritem vrne vanj.
+* "veljavne_poteze(self)": vrne seznam parov polj, kamor je možno položiti domino.
+* "naredi_potezo(self,i1,j1,i2,j2)": preveri veljavnost potez "(i1,j1)" in "(i2,j2)", pri čemer je "i" vrstica in "j" stolpec.
+* "stanje_igre(self)": ugotovi, če je igre konec ali ne.
+* "na_potezi": kdo je na potezi: "rdeci", "modri" ali "None".
 
 #### Igralci
 Razne vrste igralcev (človek, algoritem minimax, algoritem alfa-beta) predstavimo vsakega s svojim razredom. Objekt, ki predstavlja igralca, mora imeti naslednje metode:
 
 * "__ init __(self, gui)": konstruktorju podamo objekt `gui`, s katerim lahko dostopa do uporabniškega vmesnika in stanja igre
-* "igraj(self)": GUI pokliče to metodo, ko je igralec na potezi
-* "prekini(self)":  GUI pokliče to metodo, da prekine razmišljanje
-* "klik(self, i, j)": GUI pokliče to metodo, če je igralec na potezi in je uporabnik kliknil polje "(i,j)" na plošči
-* "spust"(self, i, j)": GUI pokliče to metodo, če je igralec že kliknil na polje in končal klik na polju "(i,j)" na plošči
+* "igraj(self)": GUI pokliče to metodo, ko je igralec na potezi. V razredu računaknik ustvari vlakno v katerem požene algoritem, v razredu človek pa čaka na klik na polje.
+* "preveri(self)": preveri, če je igralec že naredil potezo.
+* "prekini(self)":  prekine razmišljanje igralcev.
+* "klik(self, i, j)": igralec je na potezi in je kliknil na polje "(i,j)".
+* "spust"(self, i, j)": igralec je na potezi in je končal na polju "(i,j)".
 
-##### Razred "clovek"
+##### Razred "človek"
 Igralec je človek, potezo dobi s klikom na miško.
 
 ##### Razred "računalnik"
-Igralec računalnik, ki igra z metodo minimax ali alfa-beta.
+Igralec računalnik, ki ustvari novo vlakno v katerem deluje algoritem.
 
-##### Razred "algoritem minimax"
-Razred, ki vsebuje algoritem minimax. Metde so naslednje:
+##### Razred "algoritem"
+Razred, ki vsebuje metodo minimax in alfa-beta:
 
-* "__ init __(self, globina)": konstruktorju podamo objekt `globina`.
-* "izracunaj_potezo(self, igra)": računalnik pokliče to metodo, da najde najboljšo potezo
-* "vrednost_igre(self)": vrne vrednost igre po odigrani potezi, ki jo uporabi minimax
-* "minimax(self, globina, maksimiziramo)": ovrednoti možne poteze ter vrne najboljšo potezo
-
+* "__ init __(self, igra)": konstruktorju podamo objekt `igra`, s katerim dostopa do kopije igre.
+* "izracunaj_potezo(self, globina)": računalnik pokliče to metodo, da najde najboljšo potezo, po metodi, ki je podana z globino.
+* "vrednost_igre(self)": vrne vrednost igre po odigrani potezi izbrane metode.
+* "minimax(self, globina, maksimiziramo)": ovrednoti možne poteze ter vrne najboljšo potezo.
+* "alfabeta(self, globina, maksimiziramo)": ovrednoti možne poteze ter vrne najboljšo potezo.
