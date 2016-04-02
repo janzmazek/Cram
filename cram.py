@@ -133,7 +133,7 @@ class Racunalnik():
         pass
     
 ######################################################################
-## Algoritem minimax
+## Algoritem
 
 UTEZ = 1000
 NESKONCNO = UTEZ + 1
@@ -152,7 +152,7 @@ class Algoritem():
         if globina == 2: # Metoda je minimax.
             self.poteza = self.minimax(globina, True)[0]
         elif globina == 3: # Metoda je alfa-beta.
-            self.poteza = self.alfabeta(globina, True)[0]
+            self.poteza = self.alfabeta(globina, -NESKONCNO, NESKONCNO, True)[0]
         else:
             assert False, "algoritem: prepovedana metoda"
 
@@ -201,6 +201,9 @@ class Algoritem():
                     p2 += 1        
             vrednost = vrednost + vrednosti_vrstic_stolpcev.get(p1,0) + vrednosti_vrstic_stolpcev.get(p2,0)
         return vrednost
+
+######################################################################
+## Algoritem minimax
 
     def minimax(self, globina, maksimiziramo):
         """Metoda minimax. Vrne potezo in njeno vrednost."""
@@ -253,11 +256,67 @@ class Algoritem():
                 return (naj_poteza, naj_vrednost)
         else:
             assert False, "minimax: prepovedano stanje igre"
-        
 
-    def alfabeta(self, globina, maksimiziramo):
-        """Metoda alfa-beta. Vrne potezo in njeno vrednost."""
-        return(None, None)
+######################################################################
+## Algoritem alfabeta
+
+    def alfabeta(self, globina, alfa, beta, maksimiziramo):
+        """Metoda minimax. Vrne potezo in njeno vrednost."""
+        stanje_alfabeta = self.igra.stanje_igre()
+        igralec_alfabeta = self.igra.na_potezi
+        # Igre je konec.
+        if stanje_alfabeta == KONEC: 
+            if igralec_alfabeta == MODRI:
+                return (None, UTEZ)
+            elif igralec_alfabeta == RDECI:
+                return (None, -UTEZ)
+        # Igre ni konec.
+        elif stanje_alfabeta == NI_KONEC: 
+            if globina == 0: # Zmanjkalo je globine.
+                return (None, self.vrednost_igre())
+            else:
+                globina -=1
+                if maksimiziramo:  # Maksimiziramo
+                    naj_poteza = None
+                    naj_vrednost = -NESKONCNO
+                    veljavne = self.igra.veljavne_poteze()
+                    for p in range(len(veljavne)):
+                        (x1, y1, x2, y2) = veljavne[p]
+                        stanje_max = self.igra.naredi_potezo(x1, y1, x2, y2)[1]
+                        zgodovina_max = self.igra.zgodovina
+                        vrednost = self.alfabeta(globina, alfa, beta, not maksimiziramo)[1]
+                        (self.igra.plosca, self.igra.na_potezi) = zgodovina_max  
+                        if vrednost > naj_vrednost:
+                            naj_vrednost = vrednost
+                            naj_poteza = veljavne[p]
+                        alfa=max(alfa, naj_vrednost)
+                        if beta <= alfa:
+                            break
+                        if self.racunalnik.koncaj is True: # Igro prekinemo.
+                            break
+                        
+                else: # Minimiziramo
+                    naj_poteza = None
+                    naj_vrednost = NESKONCNO
+                    veljavne = self.igra.veljavne_poteze()
+                    for p in range(len(veljavne)):
+                        (x1, y1, x2, y2) = veljavne[p]
+                        stanje_mini = self.igra.naredi_potezo(x1, y1, x2, y2)[1]
+                        zgodovina_mini = self.igra.zgodovina
+                        vrednost = self.alfabeta(globina, alfa, beta, not maksimiziramo)[1]
+                        (self.igra.plosca, self.igra.na_potezi) = zgodovina_mini
+                        if vrednost < naj_vrednost:
+                            naj_vrednost = vrednost
+                            naj_poteza = veljavne[p]
+                        beta=min(beta, naj_vrednost)
+                        if beta <= alfa:
+                            break
+                        if self.racunalnik.koncaj is True: # Igro prekinemo.
+                            break
+                        
+                return (naj_poteza, naj_vrednost)
+        else:
+            assert False, "minimax: prepovedano stanje igre"
         
             
 ######################################################################
