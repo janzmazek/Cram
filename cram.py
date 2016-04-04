@@ -375,6 +375,7 @@ class Gui():
         menu.add_cascade(label="Igra", menu=menu_igra)
         menu_igra.add_command(label="Človek proti računalniku", command=lambda: self.spremeni_nacin(master, 1))
         menu_igra.add_command(label="Človek proti človeku", command=lambda: self.spremeni_nacin(master, 2))
+        menu_igra.add_command(label="Računalnik proti računalniku", command=lambda: self.spremeni_nacin(master, 3))
 
         # Podmenu za izbiro velikosti
         menu_velikost = tkinter.Menu(menu)
@@ -405,6 +406,8 @@ class Gui():
             self.zacni_igro(Clovek(self), Racunalnik(self))
         elif self.nacin == 2:
             self.zacni_igro(Clovek(self), Clovek(self))
+        elif self.nacin == 3:
+            self.zacni_igro(Racunalnik(self), Racunalnik(self))
         else:
             assert False, "gui: neveljaven nacin"
         
