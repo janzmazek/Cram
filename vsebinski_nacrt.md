@@ -12,6 +12,7 @@ Aplikacija je v enem od treh stanj:
 
 	* človek – človek
 	* človek – računalnik
+	* računalnik – računalnik
 	
 	2.velikost igralnega polja
 
@@ -28,7 +29,7 @@ Aplikacija je v enem od treh stanj:
 	* trenutna razporeditev domin
 	* kdo je trenutno na potezi
 
-3. Konec igre – prikaže zmagovalca
+3. Konec igre – prikaže zmagovalca in možnost ponovne igre
 
 Prehod med stanji:
 
@@ -54,7 +55,12 @@ Razred, v katerem je definiran uporabniški vmesnik. Metode:
 * "zacni_igro(self, rdeci, modri)": prične igro z danima igralcema.
 * "prekini_igro(self, rdeci, modri)": prekine igro v primeru, da uporabnik zapusti igro.
 * "koncaj_igro(self, zmagovalec)": konča igro in izpiše zmagovalca.
-* "naredi_potezo(self,i1,j1,i2,j2)": odigra potezi na polju "(i1,j1)" in "(i2,j2)"
+* "ponovi_igro(self, event)": klik na ploščo ponovi igro.
+* "spremeni_nacin(self, master, nacin)", "spremeni_velikost(self, master, velikost)" in "spremeni_tezavnost(self, master, tezavnost)": Uporabnik spreminja način, velikost in težavnost igre.
+* "naredi_polje(self, master, velikost)" in "naredi_crte(self, velikost)": ustvarimo polje dane velikosti.
+* "plosca_klik(self, event)" in "plosca_spust(self, event)": lovi klike in spuste na ploščo.
+* "pobarvaj_rdece(self,i1,j1,i2,j2)" in "pobarvaj_modro(self,i1,j1,i2,j2)": polje kamor je igralec položil domino pobarva.
+* "naredi_potezo(self,i1,j1,i2,j2)": odigra potezi na polju "(i1,j1)" in "(i2,j2)".
 
 #### Razred "igra"
 Objekt tega razreda vsebuje logiko igre. Ima naslednje metode:
@@ -80,7 +86,7 @@ Razne vrste igralcev (človek, algoritem minimax, algoritem alfa-beta) predstavi
 Igralec je človek, potezo dobi s klikom na miško.
 
 ##### Razred "računalnik"
-Igralec računalnik, ki ustvari novo vlakno v katerem deluje algoritem.
+Igralec je računalnik, ki ustvari novo vlakno v katerem deluje algoritem.
 
 ##### Razred "algoritem"
 Razred, ki vsebuje metodo minimax in alfa-beta:
@@ -88,5 +94,5 @@ Razred, ki vsebuje metodo minimax in alfa-beta:
 * "__ init __(self, igra)": konstruktorju podamo objekt `igra`, s katerim dostopa do kopije igre.
 * "izracunaj_potezo(self, globina)": računalnik pokliče to metodo, da najde najboljšo potezo, po metodi, ki je podana z globino.
 * "vrednost_igre(self)": vrne vrednost igre po odigrani potezi izbrane metode.
-* "minimax(self, globina, maksimiziramo)": ovrednoti možne poteze ter vrne najboljšo potezo.
-* "alfabeta(self, globina, maksimiziramo)": ovrednoti možne poteze ter vrne najboljšo potezo.
+* "minimax(self, globina, maksimiziramo)": ovrednoti možne poteze po metodi minimax ter vrne najboljšo potezo.
+* "alfabeta(self, globina, maksimiziramo)": ovrednoti možne poteze po metodi z alfa-beta rezanjem in vrne najboljšo potezo.
